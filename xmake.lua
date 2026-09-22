@@ -1,4 +1,5 @@
 set_project("gcc-warray-bounds-false-positive")
+set_xmakever("3.1.1")
 set_languages("c++23")
 
 target("gcc-warray-bounds-false-positive")
