@@ -1,4 +1,4 @@
-# GCC `-Warray-bounds` false positive
+## GCC `-Warray-bounds` false positive
 
 Minimal C++ reproducer for a GCC `-Warray-bounds` false positive on an
 inlined, bounds-checked `std::vector<std::pair<int, int>>` access.
@@ -7,7 +7,7 @@ The function returns before indexing when `index >= values.size()`. With GCC
 13.3.0 and optimization enabled, the call using `index == values.size()` is
 nevertheless diagnosed as an out-of-bounds access.
 
-## Preconditions
+### Preconditions
 
 The reproducer has been verified with:
 
@@ -16,7 +16,7 @@ The reproducer has been verified with:
 
 Xmake is optional when invoking `g++` directly.
 
-## Reproduce
+### Reproduce
 
 ```bash
 g++ -std=c++23 -O2 -Wall -Wextra -Werror test.cpp
@@ -35,7 +35,7 @@ The Xmake test treats the expected compilation failure as success:
 xmake test
 ```
 
-## Related GCC PRs
+### Related GCC PRs
 
 - [PR 110620: spurious array-bounds](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=110620)
   is the direct upstream match. Its reproducer also uses an inlined,
