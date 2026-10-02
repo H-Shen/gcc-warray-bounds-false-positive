@@ -1,0 +1,59 @@
+name: Reproduce GCC -Warray-bounds false positive
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  reproduce:
+    name: GCC 13.3.0 reproducer
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show GCC version
+        run: docker run --rm gcc:13.3.0 g++ --version
+
+      - name: Verify expected false positive
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          set +e
+          docker run --rm \
+            -v "$PWD:/src" \
+            -w /src \
+            gcc:13.3.0 \
+            g++ \
+              -std=c++23 \
+              -O2 \
+              -Wall \
+              -Wextra \
+              -Werror \
+              -c test.cpp \
+              -o /tmp/test.o \
+              > gcc.log 2>&1
+          status=$?
+          set -e
+
+          cat gcc.log
+
+          if [[ $status -eq 0 ]]; then
+            echo "::error::Expected GCC 13.3.0 to reproduce the -Warray-bounds false positive, but compilation succeeded."
+            exit 1
+          fi
+
+          if ! grep -Fq "[-Werror=array-bounds=]" gcc.log; then
+            echo "::error::Compilation failed, but not because of the expected -Warray-bounds diagnostic."
+            exit 1
+          fi
+
+          if ! grep -Eq "array subscript [0-9]+ is outside array bounds" gcc.log; then
+            echo "::error::Expected GCC array-bounds diagnostic text was not found."
+            exit 1
+          fi
+
+          echo "Confirmed: GCC 13.3.0 reproduced the expected -Warray-bounds false positive."
